@@ -1,3 +1,38 @@
+## v1.0.0（Clash Verge Dual NIC，2026-10-12）
+
+<details>
+<summary><strong> ✨ 新增功能 </strong></summary>
+
+**🖥️ Windows**
+
+- 新增双网卡分流，国内直连与订阅代理可分别选择物理出口
+- 新增国内与代理备用、未匹配流量直连兜底，支持出口共用网卡
+- 新增首页网卡流量与出口检测，显示真实 TCP 源地址和收发趋势
+- 新增独立客户端与服务身份，支持只读导入原版订阅
+
+</details>
+
+<details>
+<summary><strong> 🐞 修复问题 </strong></summary>
+
+**🖥️ Windows**
+
+- 修复双网卡模式下 LAN 无法访问及订阅配置恢复失败的问题
+- 修复独立服务安装入口仍使用原版文件名的问题
+
+</details>
+
+<details>
+<summary><strong> 🚀 优化改进 </strong></summary>
+
+**🖥️ Windows**
+
+- 优化更新方式：使用独立发行版号，禁用原版更新检测与在线安装
+
+</details>
+
+以下 v2.5.8 为上游 Clash Verge Rev 基线的更新记录。
+
 ## v2.5.8
 
 <details>

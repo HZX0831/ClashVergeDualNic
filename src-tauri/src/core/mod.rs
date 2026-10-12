@@ -1,6 +1,8 @@
 pub mod auto_backup;
 pub mod autostart;
 pub mod backup;
+pub mod dual_nic;
+pub mod dual_nic_import;
 pub mod hotkey;
 pub mod lightweight;
 pub mod listener;
@@ -22,5 +24,5 @@ pub mod updater;
 pub mod validate;
 pub mod win_uwp;
 
-pub use self::{manager::CoreManager, timer::Timer, updater::SilentUpdater};
+pub use self::{manager::CoreManager, timer::Timer};
 pub use notify::{handle, notification};

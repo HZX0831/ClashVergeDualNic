@@ -69,6 +69,7 @@ verge_registry! {
     collapse_navbar => NoEffect;
     sysproxy_tray_icon => [TrayIcon];
     tun_tray_icon => [TrayIcon];
+    dual_nic => [ClashConfig, TrayMenu, TrayTooltip];
     enable_tun_mode => Tun;
     enable_auto_launch => [Autostart];
     enable_silent_start => NoEffect;
@@ -173,7 +174,7 @@ mod tests {
     fn representative_verge_patches_map_to_frozen_effects() {
         assert_eq!(verge_effects(&IVerge::default()), Effects::new());
 
-        let cases: [(IVerge, &[Effect]); 9] = [
+        let cases: [(IVerge, &[Effect]); 10] = [
             (
                 verge_patch(|p| p.verge_mixed_port = Some(27899)),
                 &[Effect::RestartCore],
@@ -212,6 +213,15 @@ mod tests {
                 &[Effect::TrayClick],
             ),
             (verge_patch(|p| p.theme_mode = Some("dark".into())), &[]),
+            (
+                verge_patch(|p| {
+                    p.dual_nic = Some(clash_verge_dualnic::Settings {
+                        enabled: true,
+                        ..Default::default()
+                    })
+                }),
+                &[Effect::ClashConfig, Effect::TrayMenu, Effect::TrayTooltip],
+            ),
         ];
         for (patch, expected) in cases {
             assert_eq!(

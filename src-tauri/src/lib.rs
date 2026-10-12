@@ -47,14 +47,6 @@ mod app_init {
         let mut builder = builder
             .plugin(tauri_plugin_clash_verge_sysinfo::init())
             .plugin(tauri_plugin_notification::init())
-            .plugin(
-                tauri_plugin_updater::Builder::new()
-                    .default_version_comparator(|current, release| {
-                        release.version > current
-                            || core::updater::is_build_to_stable(&current.to_string(), &release.version.to_string())
-                    })
-                    .build(),
-            )
             .plugin(tauri_plugin_clipboard_manager::init())
             .plugin(tauri_plugin_process::init())
             .plugin(tauri_plugin_global_shortcut::Builder::new().build())
@@ -140,6 +132,13 @@ mod app_init {
             cmd::open_logs_dir,
             cmd::open_core_dir,
             cmd::get_network_interfaces,
+            cmd::list_physical_adapters,
+            cmd::get_adapter_traffic,
+            cmd::preview_dual_nic,
+            cmd::apply_dual_nic,
+            cmd::get_dual_nic_status,
+            cmd::test_dual_nic,
+            cmd::import_official_profiles,
             cmd::get_system_hostname,
             cmd::restart_app,
             cmd::install_update,
@@ -362,7 +361,7 @@ pub fn run() -> std::process::ExitCode {
 
             #[cfg(target_os = "macos")]
             if let Some(window) = _app_handle.get_webview_window("main") {
-                let _ = window.set_title("Clash Verge");
+                let _ = window.set_title("Clash Verge Dual NIC");
             }
         }
 

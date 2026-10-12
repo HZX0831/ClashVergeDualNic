@@ -34,6 +34,7 @@ pub enum FrontendEvent<'a> {
         state: serde_json::Value,
     },
     PendingFailuresChanged,
+    DualNicStatusChanged,
     #[cfg(target_os = "linux")]
     ThemeChanged {
         theme: tauri::Theme,
@@ -341,6 +342,7 @@ impl NotificationSystem {
             FrontendEvent::ProfileUpdateStarted { uid } => ("profile-update-started", Ok(json!({ "uid": uid }))),
             FrontendEvent::ProfileUpdateCompleted { uid } => ("profile-update-completed", Ok(json!({ "uid": uid }))),
             FrontendEvent::RunStateChanged { state } => ("verge://run-state-changed", Ok(state)),
+            FrontendEvent::DualNicStatusChanged => ("dual-nic-status-changed", Ok(serde_json::Value::Null)),
             FrontendEvent::PendingFailuresChanged => ("verge://pending-failures-changed", Ok(serde_json::Value::Null)),
             #[cfg(target_os = "linux")]
             FrontendEvent::ThemeChanged { theme } => ("tauri://theme-changed", serde_json::to_value(theme)),
@@ -384,6 +386,11 @@ mod wire_tests {
 /// Shared by the wire golden test and the contract export so the two cannot drift.
 fn sample_frontend_events(uid: &String) -> Vec<(FrontendEvent<'_>, &'static str, serde_json::Value)> {
     vec![
+        (
+            FrontendEvent::DualNicStatusChanged,
+            "dual-nic-status-changed",
+            json!(null),
+        ),
         (
             FrontendEvent::RefreshClash,
             "verge://refresh-clash-config",

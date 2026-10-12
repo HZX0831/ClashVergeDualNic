@@ -525,7 +525,7 @@ mod readiness_tests {
     fn core_occupancy_explanation_preserves_the_original_error() {
         for detail in [
             "process verge-mihomo remains after IPC failure; refusing a second core",
-            "process verge-mihomo-alpha.exe (PID 123) is still running; refusing a second core",
+            "process verge-mihomo-dualnic-alpha.exe (PID 123) is still running; refusing a second core",
         ] {
             let error = super::explain_core_occupancy(anyhow::anyhow!(detail));
             assert_eq!(error.to_string(), clash_verge_i18n::t!("core.alreadyRunning"));

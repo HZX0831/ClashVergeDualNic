@@ -195,7 +195,12 @@ const ProxyControlSwitches = ({
 
       {isTunMode && (
         <SwitchRow
-          label={t('settings.sections.proxyControl.fields.tunMode')}
+          label={
+            verge?.dual_nic?.enabled
+              ? 'TUN · 由双网卡分流管理'
+              : t('settings.sections.proxyControl.fields.tunMode')
+          }
+          disabled={verge?.dual_nic?.enabled || false}
           active={(enable_tun_mode && isTunModeAvailable) || false}
           infoTitle={t('settings.sections.proxyControl.tooltips.tunMode')}
           onInfoClick={() => tunRef.current?.open()}

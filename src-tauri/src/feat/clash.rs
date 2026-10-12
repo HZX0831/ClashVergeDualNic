@@ -92,6 +92,13 @@ fn after_change_clash_mode() {
 
 /// Propagates mihomo PATCH failures so the frontend can roll back its optimistic mode.
 pub async fn change_clash_mode(mode: String) -> Result<(), String> {
+    let _config_write = Config::try_lock_config_write().map_err(|e| smartstring::alias::String::from(e.to_string()))?;
+    if crate::core::dual_nic::enabled().await {
+        if mode != "rule" {
+            return Err("Rule mode is managed by dual NIC policy".into());
+        }
+        return Ok(());
+    }
     let mut mapping = Mapping::new();
     mapping.insert(Value::from("mode"), Value::from(mode.as_str()));
     let json_value = serde_json::json!({

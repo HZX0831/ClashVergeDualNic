@@ -875,8 +875,22 @@ async fn apply_dns_settings(config: Mapping, enable_dns_settings: bool) -> (Mapp
 pub async fn enhance(
     profiles: &IProfiles,
 ) -> Result<(Mapping, HashSet<String>, HashMap<String, ResultLog>, DnsOverrideState)> {
+    enhance_with_dual_nic(profiles, None).await
+}
+
+pub async fn enhance_with_dual_nic(
+    profiles: &IProfiles,
+    dual_nic_override: Option<&clash_verge_dualnic::Settings>,
+) -> Result<(Mapping, HashSet<String>, HashMap<String, ResultLog>, DnsOverrideState)> {
     let profile_uid = profiles.current.as_deref().unwrap_or_default();
-    let cfg_vals = get_config_values(profile_uid).await;
+    let mut cfg_vals = get_config_values(profile_uid).await;
+    if let Some(settings) = dual_nic_override {
+        cfg_vals.enable_tun = if settings.enabled {
+            true
+        } else {
+            settings.restore_tun.unwrap_or(cfg_vals.enable_tun)
+        };
+    }
     let ConfigValues {
         clash_config,
         clash_core,
@@ -960,6 +974,7 @@ pub async fn enhance(
     notify_discarded_keys(authoritative.overridden(&authoritative, &authoritative.current(&config)));
     let config = authoritative.enforce(config);
     let config = ensure_lan_bind_address(config);
+    let config = crate::core::dual_nic::apply_policy(config, dual_nic_override).await?;
 
     let config = cleanup_proxy_groups(config);
     let config = use_sort(config);

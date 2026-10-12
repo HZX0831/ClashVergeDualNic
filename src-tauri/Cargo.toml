@@ -1,14 +1,18 @@
 [package]
-name = "clash-verge"
-version = "2.5.8"
-description = "clash verge"
+name = "clash-verge-dualnic-app"
+version = "1.0.0"
+description = "Clash Verge Dual NIC for Windows"
 authors = ["zzzgydi", "Tunglies", "wonfen", "MystiPanda"]
 license = "GPL-3.0-only"
 repository = "https://github.com/clash-verge-rev/clash-verge-rev.git"
-default-run = "clash-verge"
+default-run = "clash-verge-dualnic"
 build = "build.rs"
 edition = "2024"
 rust-version = "1.99"
+
+[[bin]]
+name = "clash-verge-dualnic"
+path = "src/main.rs"
 
 [lib]
 name = "app_lib"
@@ -26,13 +30,14 @@ clippy = ["tauri/test"]
 perf-harness = ["dep:tauri-plugin-wdio-webdriver"]
 
 [package.metadata.bundle]
-identifier = "io.github.clash-verge-rev.clash-verge-rev"
+identifier = "io.github.clash-verge-dualnic"
 
 [build-dependencies]
 tauri-build = { version = "2.7.1", features = [] }
 
 [dependencies]
 clash-verge-draft = { workspace = true }
+clash-verge-dualnic = { workspace = true }
 clash-verge-media-unlock = { workspace = true }
 clash-verge-logging = { workspace = true }
 clash-verge-signal = { workspace = true }
@@ -99,9 +104,7 @@ tracing = { workspace = true }
 tauri-plugin-devtools = { version = "2.2.2", optional = true }
 tauri-plugin-mihomo = { git = "https://github.com/clash-verge-rev/tauri-plugin-mihomo", branch = "main" }
 async-trait = "0.1.92"
-clash_verge_service_ipc = { git = "https://github.com/clash-verge-rev/clash-verge-service-ipc.git", tag = "v2.7.6", version = "2.7.6", features = [
-  "client",
-] }
+clash_verge_service_ipc = { path = "../vendor/service-ipc", version = "2.7.6", features = ["client", "dual-nic-channel"] }
 arc-swap = "1.9.2"
 tokio-rustls = "0.26.6"
 rustls = { version = "0.23.45", features = ["ring"] }

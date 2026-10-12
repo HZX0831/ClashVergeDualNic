@@ -213,3 +213,6 @@ mod tests {
         assert!(reported.detail.contains("failed to restart the core"));
     }
 }
+
+mod dual_nic;
+pub use dual_nic::*;

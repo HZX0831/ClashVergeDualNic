@@ -714,6 +714,9 @@ where
 
 /// Records a backend-made selection so the next core start restores it.
 pub(crate) async fn record_selected_node(group_name: &str, node: &str) -> Result<()> {
+    if crate::core::dual_nic::proxy_offline().await {
+        return Ok(());
+    }
     let group_name = String::from(group_name);
     let node = String::from(node);
     persist_selected_update(true, move |mut profiles| async move {
@@ -758,6 +761,9 @@ fn remove_selected_node(selected: &mut Vec<PrfSelected>, group_name: &str) -> bo
 }
 
 pub(crate) async fn forget_selected_node(group_name: &str) -> Result<()> {
+    if crate::core::dual_nic::proxy_offline().await {
+        return Ok(());
+    }
     persist_selected_update(true, move |mut profiles| async move {
         let Some(current) = profiles.current.clone() else {
             return Ok((profiles, false));
@@ -788,6 +794,9 @@ async fn persist_reconciled_selected(
     selected: Vec<PrfSelected>,
     generation: u64,
 ) -> Result<()> {
+    if crate::core::dual_nic::proxy_offline().await {
+        return Ok(());
+    }
     if !is_activation_current(generation) {
         return Ok(());
     }

@@ -849,6 +849,7 @@ export interface TranslationResources {
           clashService: {
             appDataNotOwned: string
             installSuccess: string
+            otherClientActive: string
             permissionFallback: string
             permissionRejectedReason: string
             permissionRepairGuide: string

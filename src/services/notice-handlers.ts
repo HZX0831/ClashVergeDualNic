@@ -79,6 +79,15 @@ export const handleNoticeMessage = (
             shownStartupError !== shown
           ) {
             shownStartupError = shown
+            if (
+              failure.detail.includes('Exit the official Clash Verge client') ||
+              failure.detail.includes('another Service or Sidecar owns core execution')
+            ) {
+              showNotice.warning(
+                'settings.feedback.notifications.clashService.otherClientActive',
+              )
+              return
+            }
             showNotice.error(
               failure.kind === 'serviceCoreStopped'
                 ? 'settings.feedback.errors.clash.serviceCoreStopped'

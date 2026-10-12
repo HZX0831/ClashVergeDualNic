@@ -440,8 +440,8 @@ impl Tray {
             |(main, rest)| format!("{main}+{}", rest.split('.').next().unwrap_or("")),
         );
 
-        let tooltip = format!(
-            "Clash Verge {}\n{}: {}\n{}: {}\n{}: {}",
+        let mut tooltip = format!(
+            "Clash Verge Dual NIC {}\n{}: {}\n{}: {}\n{}: {}",
             reassembled_version,
             sys_proxy_text,
             switch_str(system_proxy),
@@ -451,6 +451,20 @@ impl Tray {
             current_profile_name
         );
 
+        if let Ok(status) = crate::core::dual_nic::status().await {
+            if status.settings.enabled {
+                let label = match status.state.as_str() {
+                    "ready" => "国内有线 / 代理 USB",
+                    "proxyOffline" => "USB 离线：国外拒绝",
+                    "wiredOffline" => "有线离线：国内拒绝",
+                    _ => "网卡离线：公网拒绝",
+                };
+                tooltip.push_str(&format!("\n双网卡：{label}"));
+                if status.error.is_some() {
+                    tooltip.push_str("\n双网卡状态检查失败");
+                }
+            }
+        }
         let Some(tray) = app_handle.tray_by_id(TRAY_ID) else {
             logging!(warn, Type::Tray, "Failed to update tray tooltip: tray not found");
             return Ok(());
@@ -852,6 +866,7 @@ async fn create_tray_menu(
         hotkeys.get("open_or_close_dashboard").copied(),
     )?;
 
+    let dual_nic_managed = verge_settings.dual_nic.as_ref().is_some_and(|s| s.enabled);
     let rule_mode = &CheckMenuItem::with_id(
         app_handle,
         MenuIds::RULE_MODE,
@@ -865,7 +880,7 @@ async fn create_tray_menu(
         app_handle,
         MenuIds::GLOBAL_MODE,
         &texts.global_mode,
-        true,
+        !dual_nic_managed,
         current_proxy_mode == "global",
         hotkeys.get("clash_mode_global").copied(),
     )?;
@@ -874,7 +889,7 @@ async fn create_tray_menu(
         app_handle,
         MenuIds::DIRECT_MODE,
         &texts.direct_mode,
-        true,
+        !dual_nic_managed,
         current_proxy_mode == "direct",
         hotkeys.get("clash_mode_direct").copied(),
     )?;
@@ -942,8 +957,12 @@ async fn create_tray_menu(
     let tun_mode = &CheckMenuItem::with_id(
         app_handle,
         MenuIds::TUN_MODE,
-        &texts.tun_mode,
-        tun_mode_available,
+        if dual_nic_managed {
+            "TUN · 双网卡分流管理"
+        } else {
+            &texts.tun_mode
+        },
+        tun_mode_available && !dual_nic_managed,
         tun_mode_enabled,
         hotkeys.get("toggle_tun_mode").copied(),
     )?;

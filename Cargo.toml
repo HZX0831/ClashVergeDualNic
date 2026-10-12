@@ -1,6 +1,7 @@
 [workspace]
 members = [
   "src-tauri",
+  "crates/clash-verge-dualnic",
   "crates/clash-verge-draft",
   "crates/clash-verge-media-unlock",
   "crates/clash-verge-logging",
@@ -10,6 +11,7 @@ members = [
   "crates/clash-verge-limiter",
 ]
 resolver = "2"
+exclude = ["vendor/service-ipc"]
 
 [profile.release]
 panic = "unwind"
@@ -56,6 +58,7 @@ muda = { git = "https://github.com/wonfen/muda.git", rev = "547de49352791653fbdf
 tray-icon = { git = "https://github.com/Tunglies/tray-icon.git", branch = "fix/macos-27-click-reentrancy" }
 
 [workspace.dependencies]
+clash-verge-dualnic = { path = "crates/clash-verge-dualnic" }
 clash-verge-draft = { path = "crates/clash-verge-draft" }
 clash-verge-media-unlock = { path = "crates/clash-verge-media-unlock" }
 clash-verge-logging = { path = "crates/clash-verge-logging" }

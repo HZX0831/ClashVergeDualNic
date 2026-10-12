@@ -1,17 +1,21 @@
 {
   "identifier": "desktop-capability",
-  "platforms": ["macOS", "windows", "linux"],
-  "webviews": ["main"],
-  "windows": ["main"],
+  "platforms": [
+    "macOS",
+    "windows",
+    "linux"
+  ],
+  "webviews": [
+    "main"
+  ],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "global-shortcut:default",
-    "updater:default",
     "dialog:default",
     "dialog:allow-ask",
     "dialog:allow-message",
-    "updater:default",
-    "updater:allow-check",
-    "updater:allow-download-and-install",
     "deep-link:default",
     "autostart:allow-enable",
     "autostart:allow-disable",
@@ -22,8 +26,46 @@
     "http:allow-fetch",
     {
       "identifier": "http:default",
-      "allow": [{ "url": "https://*/*" }, { "url": "http://*/*" }]
+      "allow": [
+        {
+          "url": "https://*/*"
+        },
+        {
+          "url": "http://*/*"
+        }
+      ]
     },
-    "mihomo:default"
+    "mihomo:allow-get-version",
+    "mihomo:allow-flush-fakeip",
+    "mihomo:allow-flush-dns",
+    "mihomo:allow-get-connections",
+    "mihomo:allow-close-all-connections",
+    "mihomo:allow-close-connection",
+    "mihomo:allow-get-groups",
+    "mihomo:allow-get-group-by-name",
+    "mihomo:allow-delay-group",
+    "mihomo:allow-get-proxy-providers",
+    "mihomo:allow-get-proxy-provider-by-name",
+    "mihomo:allow-update-proxy-provider",
+    "mihomo:allow-healthcheck-proxy-provider",
+    "mihomo:allow-healthcheck-node-in-provider",
+    "mihomo:allow-get-proxies",
+    "mihomo:allow-get-proxy-by-name",
+    "mihomo:allow-select-node-for-group",
+    "mihomo:allow-unfixed-proxy",
+    "mihomo:allow-delay-proxy-by-name",
+    "mihomo:allow-get-rules",
+    "mihomo:allow-get-rule-providers",
+    "mihomo:allow-update-rule-provider",
+    "mihomo:allow-get-base-config",
+    "mihomo:allow-update-geo",
+    "mihomo:allow-upgrade-geo",
+    "mihomo:allow-ws-traffic",
+    "mihomo:allow-ws-memory",
+    "mihomo:allow-ws-connections",
+    "mihomo:allow-ws-connections-count",
+    "mihomo:allow-ws-logs",
+    "mihomo:allow-ws-disconnect",
+    "mihomo:allow-clear-all-ws-connections"
   ]
 }

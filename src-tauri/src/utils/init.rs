@@ -556,13 +556,13 @@ pub fn init_scheme() -> Result<()> {
     let app_exe = app_exe.to_string_lossy().into_owned();
 
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-    let (clash, _) = hkcu.create_subkey("Software\\Classes\\Clash")?;
-    clash.set_value("", &"Clash Verge")?;
-    clash.set_value("URL Protocol", &"Clash Verge URL Scheme Protocol")?;
-    let (default_icon, _) = hkcu.create_subkey("Software\\Classes\\Clash\\DefaultIcon")?;
+    let (clash, _) = hkcu.create_subkey("Software\\Classes\\clash-verge-dualnic")?;
+    clash.set_value("", &"Clash Verge Dual NIC")?;
+    clash.set_value("URL Protocol", &"Clash Verge Dual NIC URL Scheme Protocol")?;
+    let (default_icon, _) = hkcu.create_subkey("Software\\Classes\\clash-verge-dualnic\\DefaultIcon")?;
     default_icon.set_value("", &app_exe)?;
-    let (command, _) = hkcu.create_subkey("Software\\Classes\\Clash\\Shell\\Open\\Command")?;
-    command.set_value("", &format!("{app_exe} \"%1\""))?;
+    let (command, _) = hkcu.create_subkey("Software\\Classes\\clash-verge-dualnic\\Shell\\Open\\Command")?;
+    command.set_value("", &format!("\"{app_exe}\" \"%1\""))?;
 
     Ok(())
 }
@@ -594,7 +594,7 @@ pub const fn init_scheme() -> Result<()> {
 }
 
 #[cfg(target_os = "linux")]
-const DEEP_LINK_SCHEMES: &[&str] = &["clash", "clash-verge"];
+const DEEP_LINK_SCHEMES: &[&str] = &["clash-verge-dualnic"];
 
 pub async fn startup_script() -> Result<()> {
     let app_handle = handle::Handle::app_handle();

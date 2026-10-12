@@ -1,6 +1,6 @@
 {
-  "name": "clash-verge",
-  "version": "2.5.8",
+  "name": "clash-verge-dualnic",
+  "version": "1.0.0",
   "license": "GPL-3.0-only",
   "scripts": {
     "prepare": "husky || true",
@@ -40,7 +40,16 @@
     "perf:build": "node scripts/perf/build.mjs",
     "perf:run": "node scripts/perf/run.mjs",
     "perf:compare": "node scripts/perf/compare.mjs",
-    "perf:test": "node --test scripts/perf/report.test.mjs"
+    "perf:test": "node --test scripts/perf/report.test.mjs",
+    "dualnic:prebuild": "node scripts/dualnic/prebuild.mjs",
+    "dualnic:test": "cargo test -p clash-verge-dualnic",
+    "dualnic:build": "node scripts/dualnic/build.mjs",
+    "dualnic:test:backend": "node scripts/dualnic/backend-tests.mjs",
+    "dualnic:test:isolation": "node scripts/dualnic/isolation-check.mjs",
+    "dualnic:package": "node scripts/dualnic/package.mjs",
+    "dualnic:test:service": "node scripts/dualnic/service-tests.mjs",
+    "dualnic:test:native": "node scripts/dualnic/native-smoke.mjs",
+    "dualnic:test:bundle": "node scripts/dualnic/install-bundle-test.mjs"
   },
   "dependencies": {
     "@dnd-kit/collision": "^0.5.0",

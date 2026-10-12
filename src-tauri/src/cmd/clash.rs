@@ -44,11 +44,17 @@ pub async fn patch_clash_mode(payload: String) -> CmdResult {
 /// Reads the saved mode without depending on strict mihomo `/configs` deserialization.
 #[tauri::command]
 pub async fn get_clash_mode() -> CmdResult<Option<String>> {
+    if crate::core::dual_nic::enabled().await {
+        return Ok(Some("rule".into()));
+    }
     Ok(Config::clash().await.data_arc().get_mode().map(Into::into))
 }
 
 #[tauri::command]
 pub async fn change_clash_core(clash_core: String) -> CmdResult<Option<CommandFailure>> {
+    if clash_core != "verge-mihomo-dualnic" {
+        return Err("This custom build pins the stable Mihomo core".into());
+    }
     logging!(info, Type::Config, "changing core to {clash_core}");
 
     match CoreManager::global().change_core(&clash_core).await {
@@ -95,11 +101,8 @@ pub async fn restart_core() -> CmdResult {
 /// Replaces the managed core binary atomically instead of letting mihomo overwrite itself.
 #[tauri::command]
 pub async fn upgrade_clash_core(force: bool) -> CmdResult<feat::CoreUpgradeReport> {
-    let report = feat::upgrade_core(force).await.with_error_code("CORE_UPGRADE_FAILED")?;
-    if report.upgraded {
-        handle::Handle::refresh_clash();
-    }
-    Ok(report)
+    let _ = force;
+    Err("Core updates require a new custom build".into())
 }
 
 #[tauri::command]

@@ -1,0 +1,23 @@
+{
+  "client": {
+    "version": "2.5.8",
+    "commit": "4337bd85758d54d7b9044b2da3c9ac1176eae1f3"
+  },
+  "service": {
+    "version": "2.7.6",
+    "commit": "b2a7427d6681c8d3780ab83a73f4dc21da2f22d6"
+  },
+  "mihomo": {
+    "version": "1.19.32",
+    "sha256": "3c107d54ef1b895e4980b53f517d52f3c1137101fa2637347c9ce343fc50d7b2",
+    "commit": "88dcbf7f1614a67c3b36b848ee3592dfa92ada36",
+    "source_sha256": "7e6d829b61b573cdf670c1d72af55344c805473481f10ef21cb2cfbbf36eb878"
+  },
+  "assets": {
+    "Country.mmdb": "ad2a3b90848bccd2065545e295de53b324931f710e0077a1a0fae2b89fddc5e5",
+    "ASN.mmdb": "e16e2db7ed72adc4443e16d7e33a25120ca58bd8d0f2e902b49ac6c50c3f4815",
+    "geoip.dat": "116cc0f03d48991962f7f9cdbbcf53d45d89777f9c3cd1a663210853e5df6093",
+    "geosite.dat": "b697cf0728afa1757297d528a83b5c2270ec06652cee5b788353bc246d6b2cd3",
+    "enableLoopback.exe": "f0c328376bd5ae0ef3b0eb19ac1f343c24a9abfe7bc1008d3b2f6ef3573d04d1"
+  }
+}

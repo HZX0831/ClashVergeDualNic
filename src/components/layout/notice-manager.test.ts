@@ -36,7 +36,7 @@ it.each([
   ],
   [
     'sidecar',
-    'Service core rejected: permission denied; Sidecar fallback failed: process verge-mihomo.exe (PID 123) is still running; refusing a second core',
+    'Service core rejected: permission denied; Sidecar fallback failed: process verge-mihomo-dualnic.exe (PID 123) is still running; refusing a second core',
   ],
 ])(
   'explains an occupied core during %s and preserves diagnostics',

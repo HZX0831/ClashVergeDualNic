@@ -9,6 +9,7 @@ import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { BaseConfig } from 'tauri-plugin-mihomo-api'
 
+import { useVerge } from '@/hooks/use-verge'
 import { useClashMode, useRuntimeConfig } from '@/hooks/use-clash'
 import {
   useAppRefreshers,
@@ -58,6 +59,8 @@ const MODE_ICONS: Record<ClashMode, ReactNode> = {
 
 export const ClashModeCard = () => {
   const { t } = useTranslation()
+  const { verge } = useVerge()
+  const managed = verge?.dual_nic?.enabled || false
   const { clashConfig } = useClashConfigData()
   const { isCoreDataPending } = useCoreDataStatus()
   const { refreshClashConfig } = useAppRefreshers()
@@ -87,7 +90,7 @@ export const ClashModeCard = () => {
       : t('home.components.clashMode.errors.communication')
 
   const onChangeMode = useLockFn(async (mode: ClashMode) => {
-    if (mode === currentMode) return
+    if (managed || mode === currentMode) return
 
     setOptimisticMode(mode)
     try {
@@ -110,7 +113,8 @@ export const ClashModeCard = () => {
   })
 
   const buttonStyles = (mode: ClashMode) => ({
-    cursor: 'pointer',
+    cursor: managed ? 'default' : 'pointer',
+    opacity: managed && mode !== 'rule' ? 0.45 : 1,
     px: 2,
     py: 1.2,
     display: 'flex',
@@ -204,7 +208,7 @@ export const ClashModeCard = () => {
         }}
       >
         <Typography variant="caption" component="div" sx={descriptionStyles}>
-          {modeDescription}
+          {managed ? '规则模式由双网卡分流管理' : modeDescription}
         </Typography>
       </Box>
     </Box>

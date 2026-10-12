@@ -1,6 +1,6 @@
 mod backup;
 mod clash;
-mod config;
+pub(crate) mod config;
 mod core_upgrade;
 mod dns;
 mod effects;

@@ -16,6 +16,7 @@ import { mutate } from '@/services/mutate'
 import { showNotice } from '@/services/notice-service'
 import getSystem from '@/utils/get-system'
 
+import { DualNicSettingsCard } from './mods/dual-nic-settings'
 import { ClashCoreViewer } from './mods/clash-core-viewer'
 import { ClashPortViewer } from './mods/clash-port-viewer'
 import { ControllerViewer } from './mods/controller-viewer'
@@ -124,6 +125,7 @@ const SettingClash = ({ onError }: Props) => {
 
   return (
     <SettingList title={t('settings.sections.clash.title')}>
+      {isWIN && <DualNicSettingsCard />}
       <WebUIViewer ref={webRef} />
       <ClashPortViewer ref={portRef} />
       <ControllerViewer ref={ctrlRef} />
@@ -198,7 +200,12 @@ const SettingClash = ({ onError }: Props) => {
         <Switch
           edge="end"
           checked={dnsEnabled}
-          disabled={!currentProfile || dnsUpdating || dnsConfirmation !== null}
+          disabled={
+            verge?.dual_nic?.enabled ||
+            !currentProfile ||
+            dnsUpdating ||
+            dnsConfirmation !== null
+          }
           onChange={(_, checked) => handleDnsToggle(checked)}
         />
       </SettingItem>

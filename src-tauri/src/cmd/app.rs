@@ -1,10 +1,5 @@
 use super::CmdResult;
-use crate::{
-    cmd::StringifyErr as _,
-    core::{SilentUpdater, updater::DownloadEvent},
-    feat,
-    utils::dirs,
-};
+use crate::{cmd::StringifyErr as _, core::updater::DownloadEvent, feat, utils::dirs};
 use smartstring::alias::String;
 use tauri::{AppHandle, Manager as _, ipc::Channel};
 
@@ -55,18 +50,12 @@ pub async fn install_update(
     version: String,
     on_event: Channel<DownloadEvent>,
 ) -> CmdResult<bool> {
-    SilentUpdater::global()
-        .install_update(&app_handle, &version, |event| {
-            let _ = on_event.send(event);
-        })
-        .await
-        .stringify_err()
+    let _ = (app_handle, version, on_event);
+    Err("This custom client uses manual updates".into())
 }
 
 #[tauri::command]
-pub fn cancel_update_download() {
-    SilentUpdater::global().cancel_download();
-}
+pub fn cancel_update_download() {}
 
 #[tauri::command]
 pub fn get_app_dir() -> CmdResult<String> {

@@ -130,7 +130,68 @@ where
     }
 }
 
+async fn run_prepared_restart<Prepare, Prepared, Restart, Restarted, Ready>(
+    runtime: &clash_verge_draft::Draft<IRuntime>,
+    prepare: Prepare,
+    restart: Restart,
+    replacement_ready: Ready,
+) -> Result<()>
+where
+    Prepare: FnOnce() -> Prepared,
+    Prepared: std::future::Future<Output = Result<()>>,
+    Restart: FnOnce() -> Restarted,
+    Restarted: std::future::Future<Output = Result<()>>,
+    Ready: FnOnce() -> bool,
+{
+    let transaction = DraftTransaction::begin(vec![runtime])?;
+    prepare().await?;
+    let result = restart().await;
+    // A ready replacement owns the candidate even if restoring the system proxy fails.
+    if result.is_ok() || replacement_ready() {
+        transaction.commit();
+    }
+    result
+}
+
 impl CoreManager {
+    #[tracing::instrument(skip_all, level = "info")]
+    pub async fn restart_core(&self) -> Result<()> {
+        let config_write = Config::lock_config_write().await;
+        let _update = self.claim_config_update(&config_write)?;
+        crate::core::dual_nic::ensure_exclusive()?;
+        let runtime = Config::runtime().await;
+        let previous = self.current_core_readiness_generation();
+        let replacement_ready = || {
+            self.current_core_readiness_generation()
+                .is_some_and(|current| Some(current) != previous)
+        };
+        let result = run_prepared_restart(
+            &runtime,
+            || async {
+                Config::generate().await?;
+                let yaml = Config::runtime_config_yaml().await?;
+                let outcome = CoreConfigValidator::global()
+                    .validate_config_outcome_with(&yaml)
+                    .await?;
+                anyhow::ensure!(outcome.is_valid(), "{outcome}");
+                Config::write_runtime_file(&yaml).await?;
+                Ok(())
+            },
+            || self.restart_core_during_config_update(),
+            replacement_ready,
+        )
+        .await;
+        if result.is_ok() || replacement_ready() {
+            handle::Handle::refresh_clash();
+            clash_verge_logging::logging_error!(Type::Config, Config::sync_dns_override().await);
+        } else if let Err(restore) = Config::generate_file().await {
+            return Err(result
+                .unwrap_err()
+                .context(format!("failed to restore the runtime file: {restore:#}")));
+        }
+        result
+    }
+
     pub(crate) fn claim_config_update(
         &self,
         _config_write: &tokio::sync::MutexGuard<'_, ()>,
@@ -156,6 +217,10 @@ impl CoreManager {
     }
 
     pub async fn use_default_config(&self, status: NoticeStatus, message: &str) -> Result<()> {
+        anyhow::ensure!(
+            !crate::core::dual_nic::enabled().await,
+            "Dual NIC policy forbids an unbound default configuration"
+        );
         use crate::constants::files::RUNTIME_CONFIG;
 
         let runtime_path = dirs::app_home_dir()?.join(RUNTIME_CONFIG);
@@ -320,6 +385,10 @@ impl CoreManager {
 
         let runtime = Config::runtime().await;
         let transaction = DraftTransaction::begin(vec![&runtime])?;
+        anyhow::ensure!(
+            !crate::core::dual_nic::enabled().await,
+            "Runtime proxy chains are managed by dual NIC policy"
+        );
         runtime.edit_draft(f);
         self.validate_and_apply(transaction).await
     }
@@ -495,6 +564,105 @@ mod tests {
             manager.retain_applied_runtime(&runtime, previous, &result);
             transaction.rollback();
             assert_eq!(runtime.data_arc().exists_keys.contains("replacement"), replaced);
+        }
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn restart_recovers_a_selected_subscription_after_blocked_activation() -> anyhow::Result<()> {
+        use crate::config::runtime::IRuntime;
+        use clash_verge_draft::Draft;
+        let runtime = Draft::new(IRuntime::default());
+        let selected = serde_yaml_ng::from_str(
+            "proxies:\n  - name: selected-node\n    type: socks5\n    server: 192.0.2.1\n    port: 1080\nproxy-groups:\n  - name: selected-group\n    type: select\n    proxies: [selected-node]\n",
+        )?;
+        super::run_prepared_restart(
+            &runtime,
+            || async {
+                runtime.edit_draft(|draft| draft.config = Some(selected));
+                Ok(())
+            },
+            || async {
+                assert_eq!(
+                    runtime.latest_arc().config.as_ref().unwrap()["proxies"]
+                        .as_sequence()
+                        .unwrap()
+                        .len(),
+                    1
+                );
+                assert_eq!(
+                    runtime.latest_arc().config.as_ref().unwrap()["proxy-groups"]
+                        .as_sequence()
+                        .unwrap()
+                        .len(),
+                    1
+                );
+                Ok(())
+            },
+            || false,
+        )
+        .await?;
+        assert_eq!(
+            runtime.data_arc().config.as_ref().unwrap()["proxies"]
+                .as_sequence()
+                .unwrap()
+                .len(),
+            1
+        );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn failed_restart_preparation_leaves_the_previous_core_and_runtime() -> anyhow::Result<()> {
+        use crate::config::runtime::IRuntime;
+        use clash_verge_draft::Draft;
+        let runtime = Draft::new(IRuntime::default());
+        let stopped = Cell::new(false);
+        let result = super::run_prepared_restart(
+            &runtime,
+            || async {
+                runtime.edit_draft(|draft| {
+                    draft.exists_keys.insert("invalid-candidate".into());
+                });
+                anyhow::bail!("candidate validation failed")
+            },
+            || async {
+                stopped.set(true);
+                Ok(())
+            },
+            || false,
+        )
+        .await;
+        assert!(result.unwrap_err().to_string().contains("validation failed"));
+        assert!(!stopped.get());
+        assert!(!runtime.latest_arc().exists_keys.contains("invalid-candidate"));
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn restart_failure_rolls_back_unapplied_runtime_but_retains_a_ready_replacement() -> anyhow::Result<()> {
+        use crate::config::runtime::IRuntime;
+        use clash_verge_draft::Draft;
+        for ready in [false, true] {
+            let runtime = Draft::new(IRuntime::default());
+            let result = super::run_prepared_restart(
+                &runtime,
+                || async {
+                    runtime.edit_draft(|draft| {
+                        draft.exists_keys.insert("selected-subscription".into());
+                    });
+                    Ok(())
+                },
+                || async { anyhow::bail!("restart or system proxy restore failed") },
+                || ready,
+            )
+            .await;
+            assert!(result.is_err());
+            assert_eq!(runtime.data_arc().exists_keys.contains("selected-subscription"), ready);
+            assert_eq!(
+                runtime.latest_arc().exists_keys.contains("selected-subscription"),
+                ready
+            );
         }
         Ok(())
     }

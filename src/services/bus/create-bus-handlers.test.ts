@@ -131,6 +131,22 @@ it('delivers an early core startup failure once after listeners mount', async ()
   )
 })
 
+it.each([
+  'Exit the official Clash Verge client and its core before starting this custom client',
+  'another Service or Sidecar owns core execution',
+])('explains intentional core exclusion: %s', async (detail) => {
+  vi.mocked(getCoreStartupError).mockResolvedValue({ kind: 'startFailed', detail })
+  const bus = await mountBus()
+  bus.onSubscribed()
+  bus.handlers['verge://notice-message'](['core_start::error', ''])
+  await flush()
+  expect(showNotice.warning).toHaveBeenCalledExactlyOnceWith(
+    'settings.feedback.notifications.clashService.otherClientActive',
+  )
+  expect(showNotice.error).not.toHaveBeenCalled()
+  expect(requestService).not.toHaveBeenCalled()
+})
+
 it('shows the same core failure again after the core has started in between', async () => {
   const failure = { kind: 'serviceCoreStopped', detail: 'stopped' } as const
   vi.mocked(getCoreStartupError).mockResolvedValue(failure)
@@ -197,4 +213,10 @@ it('explains a startup core rejection instead of the generic fallback notice', a
     { reason },
     0,
   )
+})
+
+it('refreshes dual NIC state when native adapter monitoring reports a change', async () => {
+  const bus = await mountBus()
+  bus.handlers['dual-nic-status-changed'](null)
+  expect(revalidateQueries).toHaveBeenCalledWith([['getDualNicStatus']])
 })

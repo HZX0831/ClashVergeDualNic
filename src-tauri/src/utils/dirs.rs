@@ -9,14 +9,14 @@ use std::{
 use tauri::Manager as _;
 
 #[cfg(not(feature = "verge-dev"))]
-pub static APP_ID: &str = "io.github.clash-verge-rev.clash-verge-rev";
+pub static APP_ID: &str = "io.github.clash-verge-dualnic";
 #[cfg(not(feature = "verge-dev"))]
-pub static BACKUP_DIR: &str = "clash-verge-rev-backup";
+pub static BACKUP_DIR: &str = "clash-verge-dualnic-backup";
 
 #[cfg(feature = "verge-dev")]
-pub static APP_ID: &str = "io.github.clash-verge-rev.clash-verge-rev.dev";
+pub static APP_ID: &str = "io.github.clash-verge-dualnic.dev";
 #[cfg(feature = "verge-dev")]
-pub static BACKUP_DIR: &str = "clash-verge-rev-backup-dev";
+pub static BACKUP_DIR: &str = "clash-verge-dualnic-backup-dev";
 
 pub static CLASH_CONFIG: &str = "config.yaml";
 pub static VERGE_CONFIG: &str = "verge.yaml";
@@ -117,13 +117,13 @@ pub fn update_interval_migrated_path() -> Result<PathBuf> {
 #[cfg(target_os = "macos")]
 pub fn service_path() -> Result<PathBuf> {
     let res_dir = app_resources_dir()?;
-    Ok(res_dir.join("clash-verge-service"))
+    Ok(res_dir.join("clash-verge-dualnic-service"))
 }
 
 #[cfg(windows)]
 pub fn service_path() -> Result<PathBuf> {
     let res_dir = app_resources_dir()?;
-    Ok(res_dir.join("clash-verge-service.exe"))
+    Ok(res_dir.join(format!("{}.exe", clash_verge_service_ipc::SERVICE_BINARY_STEM)))
 }
 
 pub fn sidecar_log_dir() -> Result<PathBuf> {
@@ -245,7 +245,7 @@ fn sidecar_ipc_path_for(_app_root: &std::path::Path, identity: &clash_verge_serv
 fn sidecar_pipe_name(identity: &clash_verge_service_ipc::OwnerIdentity, is_dev: bool) -> String {
     let flavor = if is_dev { "dev" } else { "release" };
     format!(
-        r"\\.\pipe\verge-mihomo-sidecar-{flavor}-{}",
+        r"\\.\pipe\verge-mihomo-dualnic-sidecar-{flavor}-{}",
         clash_verge_service_ipc::owner_key(identity)
     )
 }
@@ -349,11 +349,11 @@ mod windows_pipe_name_tests {
 
         assert_eq!(
             sidecar_pipe_name(&identity, false),
-            format!(r"\\.\pipe\verge-mihomo-sidecar-release-{owner_key}")
+            format!(r"\\.\pipe\verge-mihomo-dualnic-sidecar-release-{owner_key}")
         );
         assert_eq!(
             sidecar_pipe_name(&identity, true),
-            format!(r"\\.\pipe\verge-mihomo-sidecar-dev-{owner_key}")
+            format!(r"\\.\pipe\verge-mihomo-dualnic-sidecar-dev-{owner_key}")
         );
     }
 }

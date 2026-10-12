@@ -26,6 +26,7 @@ import { Suspense, lazy, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { BasePage } from '@/components/base'
+import { AdapterTrafficCard } from '@/components/home/adapter-traffic-card'
 import { ClashModeCard } from '@/components/home/clash-mode-card'
 import { CurrentProxyCard } from '@/components/home/current-proxy-card'
 import { EnhancedCard } from '@/components/home/enhanced-card'
@@ -77,6 +78,7 @@ interface HomeCardsSettings {
   proxy: boolean
   network: boolean
   mode: boolean
+  adapterTraffic: boolean
   traffic: boolean
   info: boolean
   clashinfo: boolean
@@ -92,6 +94,7 @@ const DEFAULT_HOME_CARDS: HomeCardsSettings = {
   proxy: true,
   network: true,
   mode: true,
+  adapterTraffic: true,
   traffic: true,
   clashinfo: true,
   systeminfo: true,
@@ -185,6 +188,15 @@ const HomeSettingsDialog = ({
           <FormControlLabel
             control={
               <Checkbox
+                checked={cards.adapterTraffic ?? true}
+                onChange={() => handleToggle('adapterTraffic')}
+              />
+            }
+            label="网卡流量与出口检测"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
                 checked={cards.test || false}
                 onChange={() => handleToggle('test')}
               />
@@ -239,8 +251,13 @@ const HomePage = () => {
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   // 卡片显示状态
-  const homeCards =
-    (verge?.home_cards as HomeCardsSettings | undefined) ?? DEFAULT_HOME_CARDS
+  const homeCards = useMemo(
+    () => ({
+      ...DEFAULT_HOME_CARDS,
+      ...(verge?.home_cards as HomeCardsSettings | undefined),
+    }),
+    [verge?.home_cards],
+  )
 
   // 文档链接函数
   const toGithubDoc = useLockFn(() =>
@@ -282,6 +299,7 @@ const HomePage = () => {
 
   const nonCriticalCards = useMemo(
     () => [
+      renderCard('adapterTraffic', <AdapterTrafficCard />, 12),
       renderCard(
         'traffic',
         <EnhancedCard

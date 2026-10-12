@@ -13,6 +13,12 @@ use smartstring::alias::String;
 /// ### `verge.yaml` schema
 #[derive(Default, Debug, Clone, Deserialize, Serialize)]
 pub struct IVerge {
+    #[serde(
+        default,
+        deserialize_with = "deserialize_dual_nic",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub dual_nic: Option<clash_verge_dualnic::Settings>,
     /// silent | error | warn | info | debug | trace
     pub app_log_level: Option<String>,
 
@@ -234,7 +240,7 @@ pub struct IVergeTheme {
 }
 
 impl IVerge {
-    pub const VALID_CLASH_CORES: &'static [&'static str] = &["verge-mihomo", "verge-mihomo-alpha"];
+    pub const VALID_CLASH_CORES: &'static [&'static str] = &["verge-mihomo-dualnic", "verge-mihomo-dualnic-alpha"];
 
     pub async fn validate_and_fix_config() -> Result<()> {
         let config_path = dirs::verge_path()?;
@@ -251,19 +257,19 @@ impl IVerge {
                 logging!(
                     warn,
                     Type::Config,
-                    "启动时发现无效的clash_core配置: '{}', 将自动修正为 'verge-mihomo'",
+                    "启动时发现无效的clash_core配置: '{}', 将自动修正为 'verge-mihomo-dualnic'",
                     core
                 );
-                config.clash_core = Some("verge-mihomo".into());
+                config.clash_core = Some("verge-mihomo-dualnic".into());
                 needs_fix = true;
             }
         } else {
             logging!(
                 info,
                 Type::Config,
-                "启动时发现未配置clash_core, 将设置为默认值 'verge-mihomo'"
+                "启动时发现未配置clash_core, 将设置为默认值 'verge-mihomo-dualnic'"
             );
-            config.clash_core = Some("verge-mihomo".into());
+            config.clash_core = Some("verge-mihomo-dualnic".into());
             needs_fix = true;
         }
 
@@ -296,7 +302,7 @@ impl IVerge {
     }
 
     pub fn get_valid_clash_core(&self) -> String {
-        self.clash_core.clone().unwrap_or_else(|| "verge-mihomo".into())
+        self.clash_core.clone().unwrap_or_else(|| "verge-mihomo-dualnic".into())
     }
 
     pub async fn new() -> Self {
@@ -326,7 +332,7 @@ impl IVerge {
         Self {
             app_log_max_size: Some(128),
             app_log_max_count: Some(8),
-            clash_core: Some("verge-mihomo".into()),
+            clash_core: Some("verge-mihomo-dualnic".into()),
             language: Some(clash_verge_i18n::system_language().into()),
             theme_mode: Some("system".into()),
             #[cfg(not(target_os = "windows"))]
@@ -372,7 +378,7 @@ impl IVerge {
             use_default_bypass: Some(true),
             proxy_guard_duration: Some(30),
             auto_close_connection: Some(true),
-            auto_check_update: Some(true),
+            auto_check_update: Some(false),
             enable_builtin_enhanced: Some(true),
             auto_log_clean: Some(2), // 1: 1天, 2: 7天, 3: 30天, 4: 90天
             enable_auto_backup_schedule: Some(false),
@@ -434,6 +440,7 @@ impl IVerge {
         patch!(sysproxy_tray_icon);
         patch!(tun_tray_icon);
 
+        patch!(dual_nic);
         patch!(enable_tun_mode);
         patch!(enable_auto_launch);
         patch!(enable_silent_start);
@@ -510,4 +517,16 @@ impl IVerge {
             LevelFilter::Info
         }
     }
+}
+
+fn deserialize_dual_nic<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> std::result::Result<Option<clash_verge_dualnic::Settings>, D::Error> {
+    let mut settings = Option::<clash_verge_dualnic::Settings>::deserialize(deserializer)?;
+    if let Some(s) = &mut settings {
+        if s.version == 1 {
+            s.version = 2;
+        }
+    }
+    Ok(settings)
 }

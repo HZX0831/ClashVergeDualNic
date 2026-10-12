@@ -4,6 +4,7 @@ import { useLockFn } from 'ahooks'
 import { useCallback, useEffect, useReducer, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { useVerge } from '@/hooks/use-verge'
 import { BasePage, TooltipIcon } from '@/components/base'
 import { ProviderButton } from '@/components/proxy/provider-button'
 import { ProxyGroups } from '@/components/proxy/proxy-groups'
@@ -28,6 +29,8 @@ const isMode = (value: unknown): value is Mode =>
 
 const ProxyPage = () => {
   const { t } = useTranslation()
+  const { verge } = useVerge()
+  const managed = verge?.dual_nic?.enabled || false
 
   // 从 localStorage 恢复链式代理按钮状态
   const [isChainMode, setIsChainMode] = useState(() => {
@@ -167,6 +170,7 @@ const ProxyPage = () => {
             {MODES.map((mode) => (
               <Button
                 key={mode}
+                disabled={managed}
                 variant={mode === curMode ? 'contained' : 'outlined'}
                 onClick={() => onChangeMode(mode)}
                 sx={{ textTransform: 'capitalize' }}
@@ -180,6 +184,7 @@ const ProxyPage = () => {
             size="small"
             variant={isChainMode ? 'contained' : 'outlined'}
             onClick={onToggleChainMode}
+            disabled={managed}
             sx={{ ml: 1 }}
             startIcon={
               isChainMode ? (
@@ -196,7 +201,7 @@ const ProxyPage = () => {
     >
       <ProxyGroups
         mode={curMode ?? 'rule'}
-        isChainMode={isChainMode}
+        isChainMode={isChainMode && !managed}
         chainConfigData={chainConfigData}
       />
     </BasePage>

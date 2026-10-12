@@ -71,7 +71,7 @@ const resolveNoticeMessage = (
   const detail = i18n.params?.message
   const existingCore =
     typeof detail === 'string'
-      ? /process verge-mihomo(?:-alpha|-al)?(?:\.exe)? (?:\(PID (\d+)\) is still running|remains after IPC failure); refusing a second core\s*$/.exec(
+      ? /process verge-mihomo(?:-dualnic)?(?:-alpha|-al)?(?:\.exe)? (?:\(PID (\d+)\) is still running|remains after IPC failure); refusing a second core\s*$/.exec(
           detail,
         )
       : null

@@ -2,3 +2,6 @@
 Changelog.md merge=union
 *.sh text eol=lf
 *.bash text eol=lf
+
+# Imported NSIS files retain upstream license and source formatting.
+src-tauri/packages/windows/plugins/** -whitespace

@@ -60,6 +60,7 @@ export const createEventBus = (deps: BusHandlerDeps) => {
   }
 
   const handlers: BusHandlers = {
+    'dual-nic-status-changed': () => deps.revalidateKeys(['getDualNicStatus']),
     'verge://refresh-clash-config': () =>
       deps.revalidateKeys([
         'getProxyView',

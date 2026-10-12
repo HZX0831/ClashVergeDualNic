@@ -608,6 +608,7 @@ impl CoreManager {
 
     #[tracing::instrument(skip_all, level = "info", fields(decision = tracing::field::Empty))]
     async fn start_core_inner(&self) -> Result<()> {
+        crate::core::dual_nic::ensure_exclusive()?;
         if Handle::global().is_exiting() {
             return Ok(());
         }
@@ -769,17 +770,6 @@ impl CoreManager {
             crate::utils::resolve::dns::sync_public_dns().await;
         }
         result
-    }
-
-    #[tracing::instrument(skip_all, level = "info")]
-    pub async fn restart_core(&self) -> Result<()> {
-        if !self.try_start_config_update() {
-            anyhow::bail!("configuration update is already running");
-        }
-        defer! {
-            self.finish_config_update();
-        }
-        self.restart_core_during_config_update().await
     }
 
     pub(crate) async fn restart_core_during_config_update(&self) -> Result<()> {
@@ -1577,7 +1567,7 @@ mod tests {
                 || async {
                     Err(crate::core::service::ServiceStartRefusal {
                         code: clash_verge_service_ipc::ServiceErrorCode::InvalidInstallLocation as u16,
-                        core_path: "verge-mihomo.exe".into(),
+                        core_path: "verge-mihomo-dualnic.exe".into(),
                         message: "no administrator-approved copy is installed".into(),
                     }
                     .into())

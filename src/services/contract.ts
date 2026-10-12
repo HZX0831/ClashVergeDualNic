@@ -42,6 +42,7 @@ export type NoticeStatus =
 
 /** Event name → payload type for every backend-emitted event. */
 export interface VergeEventPayloads {
+  'dual-nic-status-changed': null
   'verge://refresh-clash-config': string
   'verge://refresh-verge-config': string
   'verge://refresh-profiles': string

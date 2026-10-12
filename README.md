@@ -1,141 +1,132 @@
-<h1 align="center">
-  <img src="./src-tauri/icons/icon.png" alt="Clash" width="128" />
-  <br>
-  Continuation of <a href="https://github.com/zzzgydi/clash-verge">Clash Verge</a>
-  <br>
-</h1>
+# Clash Verge Dual NIC
 
-<h3 align="center">
-A Clash Meta GUI based on <a href="https://github.com/tauri-apps/tauri">Tauri</a>.
-</h3>
+面向 **Windows x64** 的双网卡分流客户端，基于 [Clash Verge Rev](https://github.com/clash-verge-rev/clash-verge-rev) 开发。国内直连、订阅代理和未匹配流量可以分别指定物理网卡，并通过实时流量与 TCP 源地址核对实际出口。
 
-<p align="center">
-  Languages:
-  <a href="./docs/README_en.md">English</a> ·
-  <a href="./docs/README_es.md">Español</a> ·
-  <a href="./docs/README_fa.md">فارسی</a> ·
-  <a href="./docs/README_ja.md">日本語</a> ·
-  <a href="./docs/README_ko.md">한국어</a> ·
-  <a href="./docs/README_pt.md">Português</a> ·
-  <a href="./docs/README_ru.md">Русский</a> ·
-  <a href="./README.md">简体中文</a>
-</p>
+**独立发行版：1.0.0** · **修改日期：2026-10-12** · **许可证：GPL v3**
 
-## Preview
+这是 Clash Verge Rev 的独立修改版。定制版使用独立的应用数据目录和 Windows 服务，版号与上游分别管理；上游官方安装包不包含本项目的双网卡功能。
 
-| Dark                             | Light                             |
-| -------------------------------- | --------------------------------- |
-| ![预览](./docs/preview_dark.png) | ![预览](./docs/preview_light.png) |
+## 功能
 
-## Install
+- 为国内直连和订阅代理分别设置主网卡与可选备用网卡。
+- 显式配置未匹配规则的直连兜底；留空时拒绝未匹配公网流量。
+- 主网卡不可用时切换到已配置的可用备用，恢复后自动切回。
+- 预览与运行状态显示主出口、备用出口、当前有效出口及切换原因。
+- 首页显示网卡上传/下载速率、观察累计量、60 秒趋势与自有内核 TCP 出口证据。
+- 支持只读导入原版订阅和必要偏好，保留订阅分类、明确拒绝规则及 LAN 访问。
 
-请到发布页面下载对应的安装包：[Release page](https://github.com/clash-verge-rev/clash-verge-rev/releases)<br>
-Go to the [Release page](https://github.com/clash-verge-rev/clash-verge-rev/releases) to download the corresponding installation package<br>
-Supports Windows (x64/x86), Linux (x64/arm64) and macOS 11+ (intel/apple).
-支持 Windows (x64/x86)、Linux (x64/arm64) 和 macOS 11+ (intel/apple)。
+## 分流规则
 
-#### 我应当怎样选择发行版
+| 流量类型 | 正常出口 | 没有可用出口时 |
+| --- | --- | --- |
+| 国内域名及中国大陆 IP | 国内主网卡直连，主网卡不可用时使用国内备用 | 拒绝国内公网流量 |
+| 已匹配订阅代理分类 | 代理主网卡连接原订阅节点，不可用时使用代理备用 | 拒绝代理流量 |
+| 未匹配具体规则 | 显式选择的兜底网卡直连 | 拒绝未匹配公网流量 |
+| LAN | 直连，由系统可达路由选择物理接口 | 保持系统路由行为 |
 
-| 版本        | 特征                                     | 链接                                                                                   |
-| :---------- | :--------------------------------------- | :------------------------------------------------------------------------------------- |
-| Stable      | 正式版，高可靠性，适合日常使用。         | [Release](https://github.com/clash-verge-rev/clash-verge-rev/releases)                 |
-| Alpha(废弃) | 测试发布流程。                           | [Alpha](https://github.com/clash-verge-rev/clash-verge-rev/releases/tag/alpha)         |
-| AutoBuild   | 滚动更新版，适合测试反馈，可能存在缺陷。 | [AutoBuild](https://github.com/clash-verge-rev/clash-verge-rev/releases/tag/autobuild) |
+所有出口角色允许使用同一张网卡。主备相同不增加备用能力；没有配置备用时不会自动寻找其他网卡。切换判断依据是网卡连接状态、可用地址与网关，网页或节点超时不会触发切换。
 
-#### 安装说明和常见问题，请到 [文档页](https://clash-verge-rev.github.io/) 查看
+未匹配兜底替代订阅顶层末尾的 MATCH/FINAL；具体分类与拒绝规则继续生效。已匹配的非 LAN DIRECT 规则沿用转代理策略，不能因代理失败自动进入默认直连。详细 DNS 与规则行为见 [使用说明](docs/dualnic/usage.md)。
 
-### TG 频道: [@clash_verge_rev](https://t.me/clash_verge_re)
+## 快速开始
 
----
+1. 从托盘完全退出官方 Clash Verge，再启动定制版。两版可同时安装，活动内核互斥。
+2. 运行 clash-verge-dualnic.exe，按需在设置中安装独立 TUN 服务；首次安装需要管理员权限。客户端需要 WebView2。
+3. 导入订阅，在 Clash 设置的「双网卡分流」中启用功能，选择国内、代理主网卡及可选备用/兜底。
+4. 预览出口配置，点击应用，再通过首页「网卡流量与出口检测」和实际访问核对源地址。
 
-## Promotion
+关闭窗口后托盘继续监测；完全退出会停止自有内核。便携版同样使用独立 AppData 目录保存配置。
 
-### ✈️ [AI云边 -- 全新架构机场 ClaudeBorder](https://cruise.54678999.xyz/#/register?code=58q5UJZc)
+**旧设置迁移提示：** 设置结构升级到版本 2 时保留主网卡，三个新增可选出口默认留空，未匹配流量会被拒绝。需要默认直连时，请显式选择兜底网卡并应用。
 
-🔥热销中使用本链接注册即送 **3 天免费试用**，每日 **1GB 流量**：👉 [点此注册](https://cruise.54678999.xyz/#/register?code=58q5UJZc)
+## 如何判断出口正确
 
-#### AI云边 -- 全新架构机场。
+网卡计数器包含该网卡上所有程序和 LAN 流量。两张网卡同时有流量，或多个出口使用同一网卡，都不能直接判定分流失败。
 
-- 💻 多次**技术迭代后**全新亮相。
-- 🗺 全**高速稳定**正价节点。
-- 🌏 **海外团队**，不跑路
-- 🚀 线路**冗余**设计，**自动化运维**对抗各类封锁
-- 👨‍🦲 团队架构师为**大厂**网络架构师
-- 💰 极致**稳定**，亲民价**价格**
-- 🌐 全面支持**流媒体及各AI访问**
-- 🙋 7*12小时真人客服。解决您的各类问题。
+TCP 出口证据需要关联目标、端口、自有内核 PID 和物理源地址；证据不足时只展示观测结果。UDP/DNS 仍需要抓包验证。手动出口探测直接检测指定出口，不能替代完整应用规则路径验收。
 
-🌐 官网：👉 [https://www.claudeborder.com](https://cruise.54678999.xyz/#/register?code=58q5UJZc)
+LAN 由系统可达路由选择网卡，因此 USB 网卡所在的内网也可以访问。更多验证方法见 [实机自测](docs/dualnic/manual-test.md) 和 [验证范围](docs/dualnic/acceptance.md)。
 
-### 🤖 [GPTKefu —— 与 Crisp 深度整合的 AI 智能客服平台](https://gptkefu.com)
+## 固定版本与更新
 
-- 🧠 深度理解完整对话上下文 + 图片识别，自动给出专业、精准的回复，告别机械式客服。
-- ♾️ **不限回答数量**，无额度焦虑，区别于其他按条计费的 AI 客服产品。
-- 💬 售前咨询、售后服务、复杂问题解答，全场景轻松覆盖，真实用户案例已验证效果。
-- ⚡ 3 分钟极速接入，零门槛上手，即刻提升客服效率与客户满意度。
-- 🎁 高级套餐免费试用 14 天，先体验后付费：👉 [立即试用](https://gptkefu.com)
-- 📢 智能客服TG 频道：[@crisp_ai](https://t.me/crisp_ai)
+| 组件 | 固定版本 |
+| --- | --- |
+| 上游 Clash Verge Rev | 2.5.8 |
+| service-ipc | 2.7.6 |
+| Mihomo | 1.19.32 |
 
----
+固定提交和资源 SHA256 见 [dualnic-build-lock.json](dualnic-build-lock.json)。Mihomo 保持固定版本；兼容的 Alpha 文件名也使用同一份稳定内核。
 
-## Features
+**原版更新检测、静默下载与在线安装已禁用。** 定制版通过手动安装发行包更新。
 
-- 基于性能强劲的 Rust 和 Tauri 2 框架
-- 内置[Clash.Meta(mihomo)](https://github.com/MetaCubeX/mihomo)内核，并支持切换 `Alpha` 版本内核。
-- 简洁美观的用户界面，支持自定义主题颜色、代理组/托盘图标以及 `CSS Injection`。
-- 配置文件管理和增强（Merge 和 Script），配置文件语法提示。
-- 系统代理和守卫、`TUN(虚拟网卡)` 模式。
-- 可视化节点和规则编辑
-- WebDav 配置备份和同步
+## 源码与构建
 
-### FAQ
+本仓库保存源码、锁文件和构建脚本。便携包、安装包、Geo 数据和构建资源不纳入 Git；如 [Releases](https://github.com/HZX0831/ClashVergeDualNic/releases) 尚无发行资产，需要先准备与构建锁匹配的资源。
 
-Refer to [Doc FAQ Page](https://clash-verge-rev.github.io/faq/windows.html)
+构建环境：Windows x64、Node.js 24、pnpm 12、Rust 1.99.0 MSVC、Visual Studio C++ Build Tools、Windows SDK 与 NSIS 3.x。请在 Developer PowerShell 中运行。
 
-### Donation
+1. 克隆仓库，安装锁定依赖：
 
-[捐助Clash Verge Rev的开发](https://github.com/sponsors/clash-verge-rev)
+~~~powershell
+git clone https://github.com/HZX0831/ClashVergeDualNic.git
+cd ClashVergeDualNic
+pnpm install --frozen-lockfile
+~~~
 
-## Development
+2. 将对应的 build-resources ZIP 解压到仓库根目录。脚本会校验 Mihomo、Geo 数据及 NSIS 插件哈希，不会下载最新版内核。
+3. 构建客户端与安装包：
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
+~~~powershell
+pnpm dualnic:build
+pnpm dualnic:test:bundle
+~~~
 
-To run the development server, execute the following commands after all prerequisites for **Tauri** are installed:
+4. 如需打包，将对应的 Mihomo-v1.19.32-source.zip 复制为 third-party/mihomo-v1.19.32-source.zip，保留归档形式，然后运行：
 
-```shell
-pnpm i
-pnpm run prebuild
-pnpm dev
-```
+~~~powershell
+pnpm dualnic:package
+~~~
 
-`pnpm dev` preserves the Development Channel's installed service state: an
-existing service is used, while a previously uninstalled service remains
-uninstalled and the app starts in Sidecar mode. Use `pnpm dev:service` to
-explicitly install or update the isolated development service before launch,
-or `pnpm dev:sidecar` to force the unprivileged Sidecar workflow.
+输出位于 release/<独立版号>/，包含便携包、安装包、客户端/服务源码、固定 Mihomo 源码、构建资源和 SHA256SUMS.txt。完整前置条件、环境变量和资源说明见 [构建指南](docs/dualnic/usage.md#构建) 与 [内核源码说明](third-party/README.md)。
 
-## Contributions
+### 相关检查
 
-Issue and PR welcome!
+~~~powershell
+pnpm dualnic:test
+pnpm dualnic:test:isolation
+pnpm dualnic:test:backend
+pnpm dualnic:test:native
+pnpm typecheck
+pnpm test -- src/components/home/adapter-traffic-card.test.ts src/components/setting/mods/dual-nic-detection-view.test.ts
+~~~
 
-## Acknowledgement
+独立服务完整测试：pnpm dualnic:test:service。验证记录包含权限环境限制与尚未完成的硬件场景。上游工作流保留供开发参考；新仓库的 GitHub Actions 暂时禁用，定制版自动构建与发布流程需适配后再启用。
 
-Clash Verge rev was based on or inspired by these projects and so on:
+## 仓库结构
 
-- [zzzgydi/clash-verge](https://github.com/zzzgydi/clash-verge): A Clash GUI based on tauri. Supports Windows, macOS and Linux.
-- [tauri-apps/tauri](https://github.com/tauri-apps/tauri): Build smaller, faster, and more secure desktop applications with a web frontend.
-- [Dreamacro/clash](https://github.com/Dreamacro/clash): A rule-based tunnel in Go.
-- [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): A rule-based tunnel in Go.
-- [Fndroid/clash_for_windows_pkg](https://github.com/Fndroid/clash_for_windows_pkg): A Windows/macOS GUI based on Clash.
-- [vitejs/vite](https://github.com/vitejs/vite): Next generation frontend tooling. It's fast!
+| 路径 | 内容 |
+| --- | --- |
+| src/ | React 界面与前端服务 |
+| src-tauri/ | Tauri 客户端、配置事务和内核生命周期 |
+| crates/clash-verge-dualnic/ | 分流策略、Windows 网卡与 TCP 采集 |
+| vendor/service-ipc/ | 独立服务源码及原始许可证 |
+| scripts/dualnic/ | 定制构建、验证与打包脚本 |
+| docs/dualnic/ | 使用、验证和许可证说明 |
+| third-party/ | Mihomo 许可证与源码准备说明 |
 
-## Privacy
+其他 crates、脚本及多语言说明来自上游；定制行为与支持平台以本 README 为准。
 
-Clash Verge Rev 不收集任何用户数据，配置与日志仅保存在本地。详见[隐私政策](./PRIVACY.md)。
+## 已知限制
 
-Clash Verge Rev does not collect any user data; configuration and logs stay on
-your own device. See the [Privacy Policy](./PRIVACY.md) for details.
+- 当前定制功能及发行目标为 Windows x64。
+- 不支持代理链、provider override-expr、额外 TUN listener 或自定义 tunnels，冲突配置会阻止应用。
+- 出口保护适用于自有内核与 TUN 正在运行期间的接管流量；订阅下载保持上游行为。
+- 实际主备拔插/恢复、UDP/DNS 出口、IPv6 和完整管理员服务场景仍需按具体环境核验，详见验证范围。
 
-## License
+## 许可证与致谢
 
-GPL-3.0 License. See [License here](./LICENSE) for details.
+本项目保留原作者版权，继续使用 [GPL v3](LICENSE)。允许修改、使用和再分发；分发修改版时须保留版权与许可证、标明修改和日期，并提供对应源码及构建/安装脚本。主要修改包括双网卡出口策略、显式备用与兜底、网卡流量和 TCP 出口检测、独立服务身份及订阅迁移/恢复。
+
+Mihomo、service-ipc 和 SimpleSC 保留各自授权与来源，详见 [许可证检查](docs/dualnic/license-review.md)。隐私说明见 [PRIVACY.md](PRIVACY.md)。
+
+感谢 [Clash Verge Rev](https://github.com/clash-verge-rev/clash-verge-rev)、[zzzgydi/Clash Verge](https://github.com/zzzgydi/clash-verge)、[Mihomo](https://github.com/MetaCubeX/mihomo)、[Tauri](https://github.com/tauri-apps/tauri)、[Clash](https://github.com/Dreamacro/clash)、[Clash for Windows](https://github.com/Fndroid/clash_for_windows_pkg) 和 [Vite](https://github.com/vitejs/vite)。

@@ -852,6 +852,7 @@ interface IProxyConfig
 }
 
 interface IVergeConfig {
+  dual_nic?: import('@/services/dual-nic').DualNicSettings
   app_log_level?: 'trace' | 'debug' | 'info' | 'warn' | 'error' | string
   app_log_max_size?: number // KB
   app_log_max_count?: number
